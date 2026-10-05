@@ -1,0 +1,1271 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Bangkok trip planner, 9 to 14 Oct 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --paper:#E6ECF1;
+  --surface:#FFFFFF;
+  --ink:#14202B;
+  --muted:#586979;
+  --rule:#C3CED8;
+  --head:#14202B;
+  --head-ink:#F2F6F9;
+  --head-mute:#A9BAC9;
+  --blue:#1F4E9E;
+  --on-blue:#FFFFFF;
+  --green:#5BA21B;
+  --red:#C0102B;
+  --amber:#E3A800;
+  --teal:#00859B;
+  --warn-bg:#FCE8EB;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#0D151E;
+    --surface:#16212C;
+    --ink:#E7EDF2;
+    --muted:#9BACBB;
+    --rule:#2B3A49;
+    --head:#0A1119;
+    --head-ink:#E7EDF2;
+    --head-mute:#8DA0B1;
+    --blue:#7FAAF2;
+    --on-blue:#0D151E;
+    --green:#8BCB4A;
+    --red:#FF7487;
+    --amber:#F2B705;
+    --teal:#3FC1D6;
+    --warn-bg:#3A1A22;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#0D151E;
+  --surface:#16212C;
+  --ink:#E7EDF2;
+  --muted:#9BACBB;
+  --rule:#2B3A49;
+  --head:#0A1119;
+  --head-ink:#E7EDF2;
+  --head-mute:#8DA0B1;
+  --blue:#7FAAF2;
+  --on-blue:#0D151E;
+  --green:#8BCB4A;
+  --red:#FF7487;
+  --amber:#F2B705;
+  --teal:#3FC1D6;
+  --warn-bg:#3A1A22;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font:15px/1.45 'Sarabun',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+html[lang="th"] body{line-height:1.6}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--blue);outline-offset:2px}
+
+.shell{max-width:1480px;margin:0 auto;padding:20px 18px 48px}
+
+/* top */
+.top{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:flex-end;justify-content:space-between}
+h1{
+  margin:0;
+  font-family:'Bricolage Grotesque','Sarabun',system-ui,sans-serif;
+  font-weight:700;
+  font-size:clamp(26px,4vw,40px);
+  line-height:1.05;
+  letter-spacing:-.02em;
+}
+.sub{margin:6px 0 0;color:var(--muted)}
+.tools{display:flex;flex-wrap:wrap;gap:8px}
+.btn{
+  border:1px solid var(--rule);
+  background:var(--surface);
+  border-radius:8px;
+  padding:8px 14px;
+  font-weight:500;
+}
+.btn:hover{border-color:var(--muted)}
+.btn.primary{background:var(--blue);border-color:var(--blue);color:var(--on-blue)}
+.btn.danger{color:var(--red);border-color:var(--red);background:transparent}
+.btn[disabled]{opacity:.45;cursor:default}
+
+.hint{
+  margin:16px 0 18px;
+  padding:10px 14px;
+  border-left:4px solid var(--blue);
+  background:var(--surface);
+  border-radius:0 8px 8px 0;
+  color:var(--muted);
+  display:flex;flex-wrap:wrap;gap:6px 18px;align-items:center;
+}
+.legend{display:inline-flex;align-items:center;gap:8px}
+.swatch{width:12px;height:12px;border-radius:50%;display:inline-block}
+.swatch.core{background:var(--blue)}
+.swatch.opt{border:2px dashed var(--muted);background:var(--surface)}
+
+.lang{display:inline-flex;border:1px solid var(--rule);border-radius:8px;overflow:hidden;background:var(--surface)}
+.lang button{border:0;background:transparent;padding:8px 12px;font-weight:500}
+.lang button+button{border-left:1px solid var(--rule)}
+.lang button[aria-pressed="true"]{background:var(--ink);color:var(--paper)}
+
+/* layout */
+.layout{display:grid;grid-template-columns:minmax(0,1fr) 310px;gap:18px;align-items:start}
+.days{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;align-items:start}
+.pool-wrap{position:sticky;top:12px;max-height:calc(100vh - 24px);overflow:auto;border-radius:12px}
+@media (max-width:1040px){
+  .layout{grid-template-columns:minmax(0,1fr)}
+  .pool-wrap{position:static;max-height:none;overflow:visible}
+}
+@media (max-width:420px){
+  .shell{padding:14px 10px 40px}
+  .days{grid-template-columns:minmax(0,1fr)}
+}
+
+/* day column */
+.day{
+  background:var(--surface);
+  border:1px solid var(--rule);
+  border-radius:12px;
+  overflow:hidden;
+}
+.day.pool{border-style:dashed;border-width:2px}
+.day-h{background:var(--head);color:var(--head-ink);padding:12px 14px 12px}
+.pool .day-h{background:transparent;color:var(--ink);border-bottom:2px dashed var(--rule)}
+.dnum{display:flex;align-items:center;gap:10px}
+.dnum .n{
+  font-family:'Bricolage Grotesque','Sarabun',system-ui,sans-serif;
+  font-weight:700;font-size:40px;line-height:1;letter-spacing:-.03em;
+}
+.dnum .m{display:flex;flex-direction:column;font-size:13px;line-height:1.2;color:var(--head-mute)}
+.dnum .m b{font-weight:600;color:var(--head-ink);font-size:15px}
+.day-h h2{
+  margin:8px 0 0;
+  font-family:'Bricolage Grotesque','Sarabun',system-ui,sans-serif;
+  font-weight:500;font-size:18px;line-height:1.25;
+}
+.pool .day-h h2{margin-top:0;font-size:22px;font-weight:700}
+.stay,.dnote{margin:4px 0 0;font-size:13px;color:var(--head-mute)}
+.pool .dnote{color:var(--muted)}
+.day-tools{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.mini{
+  background:transparent;
+  border:1px solid currentColor;
+  color:inherit;
+  border-radius:6px;
+  padding:3px 9px;
+  font-size:12.5px;
+  opacity:.85;
+}
+.mini:hover{opacity:1}
+.day-h .mini{color:var(--head-ink);border-color:var(--head-mute)}
+.pool .day-h .mini{color:var(--ink);border-color:var(--rule)}
+
+/* stops */
+.stops{list-style:none;margin:0;padding:12px 10px 4px;min-height:64px}
+.empty{color:var(--muted);font-size:13.5px;padding:6px 8px 14px;text-align:center}
+.stop{
+  display:grid;
+  grid-template-columns:66px 16px minmax(0,1fr);
+  gap:0 8px;
+  padding-bottom:12px;
+}
+.gut{display:flex;flex-direction:column;align-items:flex-start;padding-top:2px}
+.time{
+  width:66px;
+  border:1px solid transparent;
+  background:transparent;
+  border-radius:6px;
+  padding:2px 0;
+  font-family:'Bricolage Grotesque','Sarabun',system-ui,sans-serif;
+  font-weight:700;font-size:15px;
+  font-variant-numeric:tabular-nums;
+}
+.time:hover{border-color:var(--rule)}
+.end{font-size:12px;color:var(--muted);padding-left:1px}
+.step{display:flex;gap:3px;margin-top:5px}
+.step button{
+  border:1px solid var(--rule);background:transparent;border-radius:5px;
+  font-size:11px;padding:1px 4px;color:var(--muted);line-height:1.4;
+}
+.step button:hover{color:var(--ink);border-color:var(--muted)}
+.rail{position:relative}
+.rail::before{
+  content:'';position:absolute;left:50%;top:20px;bottom:-12px;width:3px;margin-left:-1.5px;
+  background:var(--rule);
+}
+.stop:last-child .rail::before{display:none}
+.dot{
+  position:relative;z-index:1;
+  display:block;width:16px;height:16px;margin-top:5px;padding:0;border-radius:50%;
+}
+.dot.core{background:var(--blue);border:2px solid var(--blue)}
+.dot.option{background:var(--surface);border:2px dashed var(--muted)}
+.dot:hover{transform:scale(1.15)}
+
+.card{
+  border:1px solid var(--rule);
+  border-radius:8px;
+  padding:9px 10px 8px;
+  background:var(--surface);
+  min-width:0;
+}
+.stop.is-option .card{border-style:dashed}
+.stop{cursor:grab}
+.stop.dragging{opacity:.35}
+.drop-line{list-style:none;height:4px;border-radius:2px;background:var(--blue);margin:0 0 10px 0}
+.ct{display:flex;gap:6px;align-items:flex-start;justify-content:space-between}
+.ttl{font-weight:600;font-size:15.5px;line-height:1.3;overflow-wrap:anywhere}
+.map{
+  flex:none;color:var(--muted);display:inline-flex;padding:2px;border-radius:5px;
+}
+.map:hover{color:var(--blue)}
+.area{font-size:12.5px;color:var(--muted);margin-top:1px}
+.how{font-size:13.5px;margin:6px 0 0}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:7px}
+.chip{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:12px;line-height:1.5;padding:0 8px 0 6px;
+  border:1px solid var(--rule);border-radius:999px;
+}
+.chip::before{content:'';width:8px;height:8px;border-radius:50%;background:var(--c)}
+.m-bts{--c:var(--green)} .m-mrt{--c:var(--blue)} .m-arl{--c:var(--red)}
+.m-taxi{--c:var(--amber)} .m-walk{--c:var(--muted)} .m-boat{--c:var(--teal)}
+.meta{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.closed{color:var(--muted)}
+.flag{
+  margin:7px 0 0;padding:5px 8px;border-radius:6px;
+  background:var(--warn-bg);color:var(--red);font-size:13px;font-weight:500;
+}
+.acts{display:flex;align-items:center;gap:4px;margin-top:8px;flex-wrap:wrap}
+.ib{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:28px;height:28px;border-radius:6px;
+  border:1px solid var(--rule);background:transparent;color:var(--muted);padding:0;
+}
+.ib:hover{color:var(--ink);border-color:var(--muted)}
+.ib.del:hover{color:var(--red);border-color:var(--red)}
+.sp{flex:1}
+.mv{display:inline-flex;align-items:center;gap:5px;font-size:12px;color:var(--muted)}
+.mv select{
+  border:1px solid var(--rule);background:var(--surface);border-radius:6px;
+  padding:3px 4px;font-size:12.5px;max-width:112px;
+}
+.addrow{
+  display:block;width:calc(100% - 20px);margin:0 10px 12px;
+  border:2px dashed var(--rule);background:transparent;border-radius:8px;
+  padding:8px;color:var(--muted);font-weight:500;
+}
+.addrow:hover{color:var(--ink);border-color:var(--muted)}
+
+/* modal */
+.ov{
+  position:fixed;inset:0;background:rgba(8,14,20,.6);
+  display:flex;align-items:flex-start;justify-content:center;
+  padding:calc(24px + env(safe-area-inset-top,0px)) 12px 24px;
+  overflow:auto;z-index:50;
+}
+.panel{
+  width:min(580px,100%);background:var(--surface);border-radius:12px;
+  border:1px solid var(--rule);padding:18px 18px 16px;
+}
+.panel h3{
+  margin:0 0 12px;font-family:'Bricolage Grotesque','Sarabun',system-ui,sans-serif;
+  font-size:22px;font-weight:700;letter-spacing:-.01em;
+}
+.form{display:grid;gap:12px}
+.form label{display:grid;gap:4px;font-size:13.5px;font-weight:500}
+.form input[type=text],.form input[type=time],.form select,.form textarea,.paste{
+  width:100%;border:1px solid var(--rule);border-radius:7px;background:var(--paper);
+  padding:7px 9px;font-weight:400;
+}
+.form textarea,.paste{resize:vertical}
+.row3{display:grid;grid-template-columns:1fr 1fr 1.3fr;gap:10px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:end}
+@media (max-width:480px){.row3{grid-template-columns:1fr 1fr}.row3 label:last-child{grid-column:1/-1}}
+fieldset{border:1px solid var(--rule);border-radius:8px;margin:0;padding:6px 10px 8px}
+legend{padding:0 4px;font-size:13.5px;font-weight:500}
+.checks{display:flex;flex-wrap:wrap;gap:4px 14px}
+.form .checks label,.form label.chk{display:inline-flex;grid-template-columns:none;align-items:center;gap:6px;font-weight:400}
+.form-actions{display:flex;gap:8px;align-items:center;margin-top:4px;flex-wrap:wrap}
+.tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.tab{border:1px solid var(--rule);background:transparent;border-radius:999px;padding:4px 12px;font-size:13.5px}
+.tab[aria-selected="true"]{background:var(--blue);border-color:var(--blue);color:var(--on-blue)}
+.paste{height:300px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px;line-height:1.45;white-space:pre}
+.note-sm{font-size:13px;color:var(--muted);margin:8px 0 0}
+
+.toast{
+  position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);
+  background:var(--head);color:var(--head-ink);padding:9px 14px;border-radius:9px;
+  display:flex;gap:12px;align-items:center;z-index:60;max-width:92vw;
+}
+.toast[hidden]{display:none}
+.toast button{background:transparent;border:1px solid var(--head-mute);color:var(--head-ink);border-radius:6px;padding:2px 9px}
+
+@media print{
+  .tools,.hint,.acts,.addrow,.step,.day-tools,.pool-wrap{display:none!important}
+  .layout{display:block}
+  body{background:#fff}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+  <header class="top">
+    <div>
+      <h1 data-i="title"></h1>
+      <p class="sub" id="summary"></p>
+    </div>
+    <div class="tools">
+      <div class="lang" role="group" id="langGroup">
+        <button data-lang="en" aria-pressed="false">English</button>
+        <button data-lang="vi" aria-pressed="false">Tiếng Việt</button>
+        <button data-lang="th" aria-pressed="false">ไทย</button>
+      </div>
+      <button class="btn primary" data-act="add" data-day="pool" data-i="add"></button>
+      <button class="btn" data-act="undo" id="undoBtn" data-i="undo"></button>
+      <button class="btn" data-act="backup" data-i="backup"></button>
+      <button class="btn" data-act="reset" data-i="reset"></button>
+    </div>
+  </header>
+
+  <div class="hint">
+    <span data-i="hint"></span>
+    <span class="legend"><i class="swatch core"></i><span data-i="legendCore"></span></span>
+    <span class="legend"><i class="swatch opt"></i><span data-i="legendOpt"></span></span>
+  </div>
+
+  <main class="layout">
+    <section class="days" id="days" aria-label="Days"></section>
+    <aside class="pool-wrap" id="pool" aria-label="Ideas"></aside>
+  </main>
+</div>
+
+<div id="modal" hidden></div>
+<div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+
+<script>
+(function(){
+'use strict';
+
+var KEY = 'bkk-trip-2026-10-v2';
+var OLDKEY = 'bkk-trip-2026-10-v1';
+var LANGKEY = 'bkk-trip-lang';
+var LANGS = ['en','vi','th'];
+var WD = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+var WEEK = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+var TEXTF = ['title','area','how','hours','note'];
+var MODEKEYS = ['bts','mrt','arl','taxi','walk','boat'];
+
+/* ---------- UI text ---------- */
+var UI = {
+ en:{
+  title:'Bangkok, 9 to 14 October 2026', pageTitle:'Bangkok trip planner, 9 to 14 Oct 2026',
+  add:'Add place', undo:'Undo', backup:'Copy or restore', reset:'Reset plan',
+  hint:'Drag a card to reorder it or move it to another day. On a phone, use the Move to menu on the card.',
+  legendCore:'Core stop', legendOpt:'Option (tap the dot to switch)',
+  summary:'{core} core stops, {opt} options on the days, {pool} ideas waiting.',
+  editDay:'Edit day', sort:'Sort by time', stay:'Stay: ',
+  emptyDay:'Nothing planned yet. Drag a card here or add a place.',
+  addToDay:'Add place to {d}', ideas:'Ideas',
+  poolNote:'Places not on a day yet. Drag them onto a day.',
+  emptyPool:'No ideas parked. Move a card here to save it for later.',
+  addIdea:'Add an idea', moveTo:'Move to', ideasOpt:'Ideas (no day)',
+  hours:'Hours: ', closed:'Closed {days}', monFri:'Mon to Fri',
+  flag:'Closed on {wd}. Move it to another day.', to:'to {end}',
+  aStart:'Start time for {t}', aEarlier:'15 minutes earlier', aLater:'15 minutes later',
+  aDotOpt:'Option. Switch to core stop', aDotCore:'Core stop. Switch to option',
+  tDotOpt:'Option. Click to make it a core stop', tDotCore:'Core stop. Click to make it an option',
+  aMap:'Open {t} in Google Maps', tMap:'Open in Google Maps',
+  aUp:'Move up', aDown:'Move down', aEdit:'Edit {t}', aDelete:'Delete {t}',
+  m_bts:'BTS', m_mrt:'MRT', m_arl:'Airport Link', m_taxi:'Grab or taxi', m_walk:'Walk', m_boat:'Boat',
+  eAdd:'Add place', eEdit:'Edit place', name:'Name', start:'Start', end:'End', day:'Day',
+  area:'Area', areaPh:'Neighbourhood or street', how:'How to get there', howPh:'BTS, MRT, taxi, walking time',
+  transport:'Transport', hoursLbl:'Opening hours', hoursPh:'For example 10:00-18:00', closedOn:'Closed on',
+  notes:'Notes', type:'Type', kCore:'Core stop', kOpt:'Option', mapLink:'Show map link',
+  del:'Delete', cancel:'Cancel', save:'Save',
+  langNote:'Text edits are saved for the current language only.',
+  dayEditTitle:'Edit {d}', dayTitle:'Title', dayStay:'Where you are staying', dayNote:'Note',
+  bkTitle:'Copy or restore', tabText:'Readable plan', tabJson:'Backup code', tabRestore:'Restore',
+  bkJsonNote:'Save this code somewhere safe. To bring it back, open the Restore tab and paste it in.',
+  bkPaste:'Paste a backup code here', bkRestoreNote:'Restoring replaces the current plan. You can undo it afterwards.',
+  copy:'Copy', close:'Close', restoreBtn:'Restore plan', copied:'Copied',
+  copyKeys:'Press Ctrl+C or Cmd+C to copy', badCode:'That is not a valid backup code', restored:'Plan restored',
+  resetTitle:'Reset the plan?', resetBody:'This puts back the original itinerary and removes your changes. You can undo it right after.',
+  resetKeep:'Keep my plan', resetGo:'Reset plan',
+  tAdded:'Added', tSaved:'Saved', tDeleted:'Deleted', tMoved:'Moved', tSorted:'Sorted by time', tUndone:'Undone', tReset:'Plan reset',
+  exTitle:'Bangkok trip, 9 to 14 Oct 2026', exHow:'How', exHours:'Hours', exClosed:'Closed', exNote:'Note', exStay:'Stay', exIdeas:'Ideas', exOption:'(option)',
+  langLabel:'Language'
+ },
+ vi:{
+  title:'Bangkok, 9 đến 14 tháng 10 năm 2026', pageTitle:'Kế hoạch du lịch Bangkok, 9 đến 14/10/2026',
+  add:'Thêm địa điểm', undo:'Hoàn tác', backup:'Sao chép hoặc khôi phục', reset:'Đặt lại kế hoạch',
+  hint:'Kéo thẻ để sắp xếp lại hoặc chuyển sang ngày khác. Trên điện thoại, dùng menu Chuyển đến trên thẻ.',
+  legendCore:'Điểm chính', legendOpt:'Tùy chọn (chạm vào chấm để đổi)',
+  summary:'{core} điểm chính, {opt} điểm tùy chọn trong các ngày, {pool} ý tưởng đang chờ.',
+  editDay:'Sửa ngày', sort:'Sắp xếp theo giờ', stay:'Lưu trú: ',
+  emptyDay:'Chưa có kế hoạch. Kéo thẻ vào đây hoặc thêm địa điểm.',
+  addToDay:'Thêm địa điểm vào {d}', ideas:'Ý tưởng',
+  poolNote:'Những địa điểm chưa xếp vào ngày nào. Kéo chúng vào một ngày.',
+  emptyPool:'Chưa có ý tưởng nào. Chuyển thẻ vào đây để để dành sau.',
+  addIdea:'Thêm ý tưởng', moveTo:'Chuyển đến', ideasOpt:'Ý tưởng (chưa có ngày)',
+  hours:'Giờ mở cửa: ', closed:'Đóng cửa {days}', monFri:'Th 2 đến Th 6',
+  flag:'Đóng cửa vào {wd}. Hãy chuyển sang ngày khác.', to:'đến {end}',
+  aStart:'Giờ bắt đầu của {t}', aEarlier:'Sớm hơn 15 phút', aLater:'Muộn hơn 15 phút',
+  aDotOpt:'Tùy chọn. Đổi thành điểm chính', aDotCore:'Điểm chính. Đổi thành tùy chọn',
+  tDotOpt:'Tùy chọn. Bấm để đổi thành điểm chính', tDotCore:'Điểm chính. Bấm để đổi thành tùy chọn',
+  aMap:'Mở {t} trong Google Maps', tMap:'Mở trong Google Maps',
+  aUp:'Di chuyển lên', aDown:'Di chuyển xuống', aEdit:'Sửa {t}', aDelete:'Xóa {t}',
+  m_bts:'BTS', m_mrt:'MRT', m_arl:'Airport Link', m_taxi:'Grab hoặc taxi', m_walk:'Đi bộ', m_boat:'Thuyền',
+  eAdd:'Thêm địa điểm', eEdit:'Sửa địa điểm', name:'Tên', start:'Bắt đầu', end:'Kết thúc', day:'Ngày',
+  area:'Khu vực', areaPh:'Khu phố hoặc tên đường', how:'Cách đi đến đó', howPh:'BTS, MRT, taxi, thời gian đi bộ',
+  transport:'Phương tiện', hoursLbl:'Giờ mở cửa', hoursPh:'Ví dụ 10:00-18:00', closedOn:'Đóng cửa vào',
+  notes:'Ghi chú', type:'Loại', kCore:'Điểm chính', kOpt:'Tùy chọn', mapLink:'Hiện liên kết bản đồ',
+  del:'Xóa', cancel:'Hủy', save:'Lưu',
+  langNote:'Nội dung văn bản chỉ được lưu cho ngôn ngữ hiện tại.',
+  dayEditTitle:'Sửa {d}', dayTitle:'Tiêu đề', dayStay:'Nơi bạn lưu trú', dayNote:'Ghi chú',
+  bkTitle:'Sao chép hoặc khôi phục', tabText:'Kế hoạch dạng văn bản', tabJson:'Mã sao lưu', tabRestore:'Khôi phục',
+  bkJsonNote:'Hãy lưu mã này ở nơi an toàn. Để khôi phục, mở tab Khôi phục và dán mã vào.',
+  bkPaste:'Dán mã sao lưu vào đây', bkRestoreNote:'Khôi phục sẽ thay thế kế hoạch hiện tại. Bạn có thể hoàn tác sau đó.',
+  copy:'Sao chép', close:'Đóng', restoreBtn:'Khôi phục kế hoạch', copied:'Đã sao chép',
+  copyKeys:'Nhấn Ctrl+C hoặc Cmd+C để sao chép', badCode:'Mã sao lưu này không hợp lệ', restored:'Đã khôi phục kế hoạch',
+  resetTitle:'Đặt lại kế hoạch?', resetBody:'Thao tác này khôi phục lịch trình gốc và xóa các thay đổi của bạn. Bạn có thể hoàn tác ngay sau đó.',
+  resetKeep:'Giữ kế hoạch của tôi', resetGo:'Đặt lại kế hoạch',
+  tAdded:'Đã thêm', tSaved:'Đã lưu', tDeleted:'Đã xóa', tMoved:'Đã chuyển', tSorted:'Đã sắp xếp theo giờ', tUndone:'Đã hoàn tác', tReset:'Đã đặt lại kế hoạch',
+  exTitle:'Chuyến đi Bangkok, 9 đến 14/10/2026', exHow:'Cách đi', exHours:'Giờ mở cửa', exClosed:'Đóng cửa', exNote:'Ghi chú', exStay:'Lưu trú', exIdeas:'Ý tưởng', exOption:'(tùy chọn)',
+  langLabel:'Ngôn ngữ'
+ },
+ th:{
+  title:'กรุงเทพฯ 9 ถึง 14 ตุลาคม 2026', pageTitle:'แผนเที่ยวกรุงเทพฯ 9 ถึง 14 ต.ค. 2026',
+  add:'เพิ่มสถานที่', undo:'ย้อนกลับ', backup:'คัดลอกหรือกู้คืน', reset:'รีเซ็ตแผน',
+  hint:'ลากการ์ดเพื่อจัดลำดับหรือย้ายไปวันอื่น บนมือถือให้ใช้เมนู ย้ายไป บนการ์ด',
+  legendCore:'จุดหลัก', legendOpt:'ตัวเลือก (แตะที่จุดเพื่อสลับ)',
+  summary:'{core} จุดหลัก, {opt} ตัวเลือกในแต่ละวัน, {pool} ไอเดียที่รอจัด',
+  editDay:'แก้ไขวัน', sort:'เรียงตามเวลา', stay:'ที่พัก: ',
+  emptyDay:'ยังไม่มีแผน ลากการ์ดมาที่นี่หรือเพิ่มสถานที่',
+  addToDay:'เพิ่มสถานที่ในวัน {d}', ideas:'ไอเดีย',
+  poolNote:'สถานที่ที่ยังไม่ได้จัดลงวัน ลากไปวางในวันที่ต้องการ',
+  emptyPool:'ยังไม่มีไอเดีย ย้ายการ์ดมาที่นี่เพื่อเก็บไว้ทีหลัง',
+  addIdea:'เพิ่มไอเดีย', moveTo:'ย้ายไป', ideasOpt:'ไอเดีย (ยังไม่กำหนดวัน)',
+  hours:'เวลาเปิด: ', closed:'ปิด {days}', monFri:'จ. ถึง ศ.',
+  flag:'ปิดวัน {wd} ควรย้ายไปวันอื่น', to:'ถึง {end}',
+  aStart:'เวลาเริ่มของ {t}', aEarlier:'เร็วขึ้น 15 นาที', aLater:'ช้าลง 15 นาที',
+  aDotOpt:'ตัวเลือก สลับเป็นจุดหลัก', aDotCore:'จุดหลัก สลับเป็นตัวเลือก',
+  tDotOpt:'ตัวเลือก คลิกเพื่อเปลี่ยนเป็นจุดหลัก', tDotCore:'จุดหลัก คลิกเพื่อเปลี่ยนเป็นตัวเลือก',
+  aMap:'เปิด {t} ใน Google Maps', tMap:'เปิดใน Google Maps',
+  aUp:'เลื่อนขึ้น', aDown:'เลื่อนลง', aEdit:'แก้ไข {t}', aDelete:'ลบ {t}',
+  m_bts:'BTS', m_mrt:'MRT', m_arl:'แอร์พอร์ตเรลลิงก์', m_taxi:'Grab หรือแท็กซี่', m_walk:'เดิน', m_boat:'เรือ',
+  eAdd:'เพิ่มสถานที่', eEdit:'แก้ไขสถานที่', name:'ชื่อ', start:'เริ่ม', end:'สิ้นสุด', day:'วัน',
+  area:'พื้นที่', areaPh:'ย่านหรือชื่อถนน', how:'วิธีเดินทางไป', howPh:'BTS, MRT, แท็กซี่, เวลาเดิน',
+  transport:'การเดินทาง', hoursLbl:'เวลาเปิด-ปิด', hoursPh:'เช่น 10:00-18:00', closedOn:'ปิดวัน',
+  notes:'หมายเหตุ', type:'ประเภท', kCore:'จุดหลัก', kOpt:'ตัวเลือก', mapLink:'แสดงลิงก์แผนที่',
+  del:'ลบ', cancel:'ยกเลิก', save:'บันทึก',
+  langNote:'ข้อความที่แก้ไขจะบันทึกเฉพาะภาษาปัจจุบัน',
+  dayEditTitle:'แก้ไข {d}', dayTitle:'หัวข้อ', dayStay:'ที่พักของคุณ', dayNote:'หมายเหตุ',
+  bkTitle:'คัดลอกหรือกู้คืน', tabText:'แผนแบบอ่านง่าย', tabJson:'รหัสสำรอง', tabRestore:'กู้คืน',
+  bkJsonNote:'เก็บรหัสนี้ไว้ในที่ปลอดภัย หากต้องการกู้คืน ให้เปิดแท็บกู้คืนแล้ววางรหัส',
+  bkPaste:'วางรหัสสำรองที่นี่', bkRestoreNote:'การกู้คืนจะแทนที่แผนปัจจุบัน คุณสามารถย้อนกลับได้ภายหลัง',
+  copy:'คัดลอก', close:'ปิด', restoreBtn:'กู้คืนแผน', copied:'คัดลอกแล้ว',
+  copyKeys:'กด Ctrl+C หรือ Cmd+C เพื่อคัดลอก', badCode:'รหัสสำรองนี้ไม่ถูกต้อง', restored:'กู้คืนแผนแล้ว',
+  resetTitle:'รีเซ็ตแผนหรือไม่?', resetBody:'การดำเนินการนี้จะคืนแผนเดิมและลบการเปลี่ยนแปลงของคุณ คุณสามารถย้อนกลับได้ทันที',
+  resetKeep:'เก็บแผนของฉันไว้', resetGo:'รีเซ็ตแผน',
+  tAdded:'เพิ่มแล้ว', tSaved:'บันทึกแล้ว', tDeleted:'ลบแล้ว', tMoved:'ย้ายแล้ว', tSorted:'เรียงตามเวลาแล้ว', tUndone:'ย้อนกลับแล้ว', tReset:'รีเซ็ตแผนแล้ว',
+  exTitle:'ทริปกรุงเทพฯ 9 ถึง 14 ต.ค. 2026', exHow:'วิธีเดินทาง', exHours:'เวลาเปิด', exClosed:'ปิด', exNote:'หมายเหตุ', exStay:'ที่พัก', exIdeas:'ไอเดีย', exOption:'(ตัวเลือก)',
+  langLabel:'ภาษา'
+ }
+};
+var DN = {
+  en:{Sun:'Sun',Mon:'Mon',Tue:'Tue',Wed:'Wed',Thu:'Thu',Fri:'Fri',Sat:'Sat'},
+  vi:{Sun:'CN',Mon:'Th 2',Tue:'Th 3',Wed:'Th 4',Thu:'Th 5',Fri:'Th 6',Sat:'Th 7'},
+  th:{Sun:'อา.',Mon:'จ.',Tue:'อ.',Wed:'พ.',Thu:'พฤ.',Fri:'ศ.',Sat:'ส.'}
+};
+var MONS = {
+  en:['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
+  vi:['thg 1','thg 2','thg 3','thg 4','thg 5','thg 6','thg 7','thg 8','thg 9','thg 10','thg 11','thg 12'],
+  th:['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.']
+};
+
+var LANG = (function(){
+  try{ var l = localStorage.getItem(LANGKEY); if(LANGS.indexOf(l) > -1) return l; }catch(e){}
+  var nav = ((navigator.language || 'en') + '').toLowerCase();
+  if(nav.indexOf('vi') === 0) return 'vi';
+  if(nav.indexOf('th') === 0) return 'th';
+  return 'en';
+})();
+
+function t(k, vars){
+  var s = (UI[LANG] && UI[LANG][k] != null) ? UI[LANG][k] : (UI.en[k] != null ? UI.en[k] : k);
+  if(vars){ Object.keys(vars).forEach(function(v){ s = s.split('{' + v + '}').join(vars[v]); }); }
+  return s;
+}
+function dn(key){ return DN[LANG][key] || key; }
+
+/* multilingual text: string or {en,vi,th} */
+function pickIn(o, lang){
+  if(o == null) return '';
+  if(typeof o !== 'object') return String(o);
+  if(o[lang] !== undefined) return o[lang];
+  var order = ['en','vi','th'];
+  for(var i = 0; i < order.length; i++){ if(o[order[i]]) return o[order[i]]; }
+  return '';
+}
+function pick(o){ return pickIn(o, LANG); }
+function setText(obj, f, v){
+  var o = obj[f];
+  if(!o) o = {};
+  else if(typeof o !== 'object') o = {en:String(o)};
+  o[LANG] = v;
+  obj[f] = o;
+}
+
+var IC = {
+  up:'<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 10l5-5 5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  down:'<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 6l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  edit:'<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M2.5 13.5l.5-3L11 2.5l2.5 2.5L5.5 13z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>',
+  trash:'<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M2.5 4.5h11M6 4.5V2.8h4v1.7M4 4.5l.6 8.7h6.8l.6-8.7" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  pin:'<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 14.5s4.7-4.3 4.7-8A4.7 4.7 0 003.3 6.5c0 3.7 4.7 8 4.7 8z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><circle cx="8" cy="6.4" r="1.7" fill="currentColor"/></svg>'
+};
+
+/* ---------- seed data ---------- */
+function L(en, vi, th){ return {en:en, vi:(vi == null ? en : vi), th:(th == null ? en : th)}; }
+
+function seed(){
+  var n = 0;
+  function it(day,time,end,title,area,how,modes,hours,kind,closed,extra){
+    extra = extra || {};
+    n++;
+    return {id:'i'+n, day:day, time:time, end:end, title:title, area:area, how:how,
+      modes:modes, hours:hours, kind:kind, closed:closed||[], note:extra.note||L(''), nomap:!!extra.nomap};
+  }
+  var days = [
+    {id:'d9',  date:'2026-10-09', title:L('Arrive in Bangkok','Đến Bangkok','เดินทางถึงกรุงเทพฯ'), stay:L('Eleven Bangkok Sukhumvit 11'), note:L('')},
+    {id:'d10', date:'2026-10-10', title:L('Chatuchak and Ekkamai','Chatuchak và Ekkamai','จตุจักรและเอกมัย'), stay:L('Eleven Bangkok Sukhumvit 11'), note:L('')},
+    {id:'d11', date:'2026-10-11', title:L('Concert day','Ngày đi xem concert','วันคอนเสิร์ต'), stay:L('Eleven Bangkok Sukhumvit 11'),
+      note:L('Rajamangala National Stadium, show at 19:50','Sân vận động Quốc gia Rajamangala, show lúc 19:50','ราชมังคลากีฬาสถาน การแสดงเริ่ม 19:50')},
+    {id:'d12', date:'2026-10-12', title:L('Move to Craftsman, Siam and Chula','Chuyển đến Craftsman, Siam và Chula','ย้ายไป Craftsman สยามและจุฬาฯ'), stay:L('Craftsman Bangkok'),
+      note:L('Check out of Eleven, check in at Craftsman','Trả phòng Eleven, nhận phòng Craftsman','เช็คเอาท์จาก Eleven เช็คอินที่ Craftsman')},
+    {id:'d13', date:'2026-10-13', title:L('Thonburi and the riverside','Thonburi và ven sông','ฝั่งธนบุรีและริมแม่น้ำ'), stay:L('Craftsman Bangkok'), note:L('')},
+    {id:'d14', date:'2026-10-14', title:L('Fly home','Bay về','เดินทางกลับ'), stay:L('Craftsman Bangkok (check out)','Craftsman Bangkok (trả phòng)','Craftsman Bangkok (เช็คเอาท์)'),
+      note:L('Flight at 11:20','Chuyến bay lúc 11:20','เที่ยวบินเวลา 11:20')}
+  ];
+  var items = [
+    // Fri 9
+    it('d9','14:00','',L('Check in at Eleven Bangkok','Nhận phòng Eleven Bangkok','เช็คอินที่ Eleven Bangkok'),
+      L('Soi Sukhumvit 11','Soi Sukhumvit 11','ซอยสุขุมวิท 11'),
+      L('Grab or taxi from where you arrive from Hua Hin. Check-in is usually from 14:00. Arrival time is flexible.','Đi Grab hoặc taxi từ nơi bạn đến từ Hua Hin. Nhận phòng thường từ 14:00. Giờ đến linh hoạt.','นั่ง Grab หรือแท็กซี่จากจุดที่มาถึงจากหัวหิน เช็คอินมักเริ่ม 14:00 เวลาถึงยืดหยุ่นได้'),
+      ['taxi'],L(''),'core'),
+    it('d9','15:00','',L('Phed Mark'),
+      L('Sukhumvit Rd, by the Ekkamai bus terminal','Đường Sukhumvit, cạnh bến xe Ekkamai','ถนนสุขุมวิท ข้างสถานีขนส่งเอกมัย'),
+      L('BTS Nana to Ekkamai (4 stops), then a short walk or taxi. Order first, then wait for your number.','BTS Nana đến Ekkamai (4 ga), rồi đi bộ ngắn hoặc taxi. Gọi món trước, sau đó chờ gọi số.','BTS นานา ไป เอกมัย (4 สถานี) แล้วเดินสั้น ๆ หรือนั่งแท็กซี่ สั่งอาหารก่อนแล้วรอเรียกหมายเลข'),
+      ['bts','walk'],L('10:00-19:00'),'option'),
+    it('d9','16:30','',L('Jaekoy'),
+      L('Phaya Thai 14 / Phetchaburi 12, Ratchathewi','Phaya Thai 14 / Phetchaburi 12, Ratchathewi','ซอยพญาไท 14 / เพชรบุรี 12 ราชเทวี'),
+      L('BTS Ratchathewi or Airport Link Phaya Thai, or a short taxi.','BTS Ratchathewi hoặc Airport Link ga Phaya Thai, hoặc đi taxi một đoạn ngắn.','BTS ราชเทวี หรือแอร์พอร์ตเรลลิงก์ สถานีพญาไท หรือนั่งแท็กซี่ระยะสั้น'),
+      ['bts','arl','taxi'],L('10:00-04:00'),'option'),
+    it('d9','17:30','21:30',L('Jodd Fairs Ratchada'),
+      L('Ratchadaphisek Rd, Din Daeng','Đường Ratchadaphisek, Din Daeng','ถนนรัชดาภิเษก ดินแดง'),
+      L('Walk to Asok, then MRT Sukhumvit to Thailand Cultural Centre (3 stops, about 10 min).','Đi bộ đến Asok, rồi đi MRT Sukhumvit đến Thailand Cultural Centre (3 ga, khoảng 10 phút).','เดินไปอโศก แล้วนั่ง MRT สุขุมวิท ไปศูนย์วัฒนธรรมแห่งประเทศไทย (3 สถานี ประมาณ 10 นาที)'),
+      ['walk','mrt'],L('17:00-01:00'),'core'),
+    // Sat 10
+    it('d10','09:00','12:00',L('Chatuchak Weekend Market'),
+      L('Chatuchak','Chatuchak','จตุจักร'),
+      L('Leave about 08:30. Walk to BTS Nana, then Mo Chit direct (about 25-30 min). Go early before the heat.','Xuất phát khoảng 08:30. Đi bộ đến BTS Nana, rồi đi thẳng đến Mo Chit (khoảng 25-30 phút). Đi sớm để tránh nóng.','ออกประมาณ 08:30 เดินไป BTS นานา แล้วนั่งตรงไปหมอชิต (ประมาณ 25-30 นาที) ไปเช้าเพื่อเลี่ยงแดดร้อน'),
+      ['walk','bts'],L('Weekends, from about 09:00','Cuối tuần, từ khoảng 09:00','เสาร์-อาทิตย์ เริ่มประมาณ 09:00'),'core',['Mon','Tue','Wed','Thu','Fri']),
+    it('d10','12:00','',L('Fried Chicken Rice Gate 2','Fried Chicken Rice Gate 2 (cơm gà chiên Cổng 2)','ข้าวไก่ทอดประตู 2'),
+      L('Probably Chatuchak Gate 2','Có thể là Cổng 2 Chatuchak','น่าจะอยู่ประตู 2 จตุจักร'),
+      L('Likely at or beside Chatuchak. Confirm the location on the map before you go.','Có vẻ ở trong hoặc cạnh Chatuchak. Hãy xác nhận vị trí trên bản đồ trước khi đi.','น่าจะอยู่ในหรือติดกับจตุจักร ตรวจตำแหน่งในแผนที่ก่อนไป'),
+      ['walk'],L(''),'core'),
+    it('d10','12:45','14:30',L('Bang Sue Junction Shopping Center'),
+      L('Kamphaeng Phet 2 Rd, across from Chatuchak','Đường Kamphaeng Phet 2, đối diện Chatuchak','ถนนกำแพงเพชร 2 ตรงข้ามจตุจักร'),
+      L('Short walk across the road from Chatuchak. Vintage and second-hand floors.','Đi bộ ngắn qua đường từ Chatuchak. Các tầng đồ vintage và đồ cũ.','เดินข้ามถนนจากจตุจักรไม่ไกล ชั้นขายของวินเทจและมือสอง'),
+      ['walk'],L('Fri-Sun 10:00-22:00, Mon-Thu 10:00-20:00','Th 6-CN 10:00-22:00, Th 2-Th 5 10:00-20:00','ศุกร์-อาทิตย์ 10:00-22:00 จันทร์-พฤหัสบดี 10:00-20:00'),'core'),
+    it('d10','16:00','17:30',L('Here Hai (original shop)','Here Hai (quán gốc)','Here Hai (ร้านต้นตำรับ)'),
+      L('Ekkamai Rd','Đường Ekkamai','ถนนเอกมัย'),
+      L('BTS Mo Chit to Ekkamai direct (about 35 min). Arrive at 16:00 for the second service.','BTS Mo Chit đến Ekkamai đi thẳng (khoảng 35 phút). Đến lúc 16:00 cho ca phục vụ thứ hai.','BTS หมอชิต ไปเอกมัย ตรง (ประมาณ 35 นาที) ไปถึง 16:00 สำหรับรอบที่สอง'),
+      ['bts'],L('10:00-15:00 and 16:00-17:30','10:00-15:00 và 16:00-17:30','10:00-15:00 และ 16:00-17:30'),'core',['Mon']),
+    it('d10','20:00','',L('Chenin'),
+      L('Sukhumvit Soi 31','Sukhumvit Soi 31','ซอยสุขุมวิท 31'),
+      L('BTS Ekkamai to Phrom Phong, then walk. Flatbread and wine.','BTS Ekkamai đến Phrom Phong, rồi đi bộ. Bánh flatbread và rượu vang.','BTS เอกมัย ไปพร้อมพงษ์ แล้วเดิน แฟลตเบรดและไวน์'),
+      ['bts','walk'],L('Sat-Sun 11:00-00:00, Mon-Fri 17:00-00:00','Th 7-CN 11:00-00:00, Th 2-Th 6 17:00-00:00','เสาร์-อาทิตย์ 11:00-00:00 จันทร์-ศุกร์ 17:00-00:00'),'option'),
+    // Sun 11
+    it('d11','11:30','',L('Gapow Tapae'),
+      L('Sukhumvit Soi 23','Sukhumvit Soi 23','ซอยสุขุมวิท 23'),
+      L('About 10 min walk from the hotel. Cash only. Expect a 20-30 min queue.','Đi bộ khoảng 10 phút từ khách sạn. Chỉ nhận tiền mặt. Dự kiến xếp hàng 20-30 phút.','เดินจากโรงแรมประมาณ 10 นาที รับเงินสดเท่านั้น คาดว่าต้องรอคิว 20-30 นาที'),
+      ['walk'],L('09:30-15:00 and 16:00-20:00','09:30-15:00 và 16:00-20:00','09:30-15:00 และ 16:00-20:00'),'core'),
+    it('d11','13:00','',L('Travel to Hua Mak','Di chuyển đến Hua Mak','เดินทางไปหัวหมาก'),
+      L('Hotel to Hua Mak','Từ khách sạn đến Hua Mak','จากโรงแรมไปหัวหมาก'),
+      L('Grab straight there (about 30-45 min), or Airport Link Makkasan to Hua Mak, then a short taxi.','Đi Grab thẳng đến đó (khoảng 30-45 phút), hoặc Airport Link từ Makkasan đến Hua Mak, rồi đi taxi một đoạn ngắn.','นั่ง Grab ตรงไป (ประมาณ 30-45 นาที) หรือแอร์พอร์ตเรลลิงก์จากมักกะสันไปหัวหมาก แล้วต่อแท็กซี่สั้น ๆ'),
+      ['taxi','arl'],L(''),'core',[],{nomap:true}),
+    it('d11','14:00','17:00',L('1981 Soul&Sold'),
+      L('Ramkhamhaeng Rd, Hua Mak','Đường Ramkhamhaeng, Hua Mak','ถนนรามคำแหง หัวหมาก'),
+      L('Close to the stadium. Vintage floors, a food court downstairs, a beer garden on the 3rd floor. Eat dinner here.','Gần sân vận động. Có các tầng đồ vintage, khu ẩm thực ở tầng dưới, quán bia ngoài trời ở tầng 3. Ăn tối ở đây.','อยู่ใกล้สนามกีฬา มีชั้นของวินเทจ ฟูดคอร์ตชั้นล่าง และเบียร์การ์เดนชั้น 3 กินมื้อเย็นที่นี่'),
+      ['taxi'],L('11:00-22:00'),'core'),
+    it('d11','19:50','',L('Concert at Rajamangala National Stadium','Concert tại Sân vận động Quốc gia Rajamangala','คอนเสิร์ตที่ราชมังคลากีฬาสถาน'),
+      L('Hua Mak','Hua Mak','หัวหมาก'),
+      L('Short Grab or motorbike taxi from 1981 Soul&Sold. Check the door time on your ticket.','Đi Grab hoặc xe ôm ngắn từ 1981 Soul&Sold. Kiểm tra giờ mở cửa trên vé.','นั่ง Grab หรือมอเตอร์ไซค์รับจ้างระยะสั้นจาก 1981 Soul&Sold ตรวจเวลาเปิดประตูบนตั๋ว'),
+      ['taxi'],L('Show starts 19:50','Show bắt đầu lúc 19:50','การแสดงเริ่ม 19:50'),'core',[],
+      {note:L('After the show, walk 10-15 min away before booking a Grab, or take Airport Link Hua Mak to Makkasan. The last train is around midnight (not verified).','Sau show, đi bộ 10-15 phút ra xa rồi hãy đặt Grab, hoặc đi Airport Link từ Hua Mak đến Makkasan. Chuyến cuối khoảng nửa đêm (chưa xác minh).','หลังจบการแสดง ให้เดิน 10-15 นาทีให้ห่างก่อนเรียก Grab หรือนั่งแอร์พอร์ตเรลลิงก์จากหัวหมากไปมักกะสัน ขบวนสุดท้ายประมาณเที่ยงคืน (ยังไม่ได้ตรวจสอบ)')}),
+    it('d11','23:30','',L('Jaekoy (late supper)','Jaekoy (ăn khuya)','Jaekoy (มื้อดึก)'),
+      L('Phaya Thai 14 / Phetchaburi 12, Ratchathewi','Phaya Thai 14 / Phetchaburi 12, Ratchathewi','ซอยพญาไท 14 / เพชรบุรี 12 ราชเทวี'),
+      L('Airport Link Hua Mak to Phaya Thai (4 stops), if you leave before the last train.','Airport Link từ Hua Mak đến Phaya Thai (4 ga), nếu bạn rời đi trước chuyến cuối.','แอร์พอร์ตเรลลิงก์จากหัวหมากไปพญาไท (4 สถานี) ถ้าออกก่อนขบวนสุดท้าย'),
+      ['arl'],L('Open until 04:00','Mở đến 04:00','เปิดถึง 04:00'),'option'),
+    // Mon 12
+    it('d12','11:30','',L('Check out of Eleven, move to Craftsman','Trả phòng Eleven, chuyển đến Craftsman','เช็คเอาท์จาก Eleven ย้ายไป Craftsman'),
+      L('Soi Phahon Yothin 11, Phaya Thai','Soi Phahon Yothin 11, Phaya Thai','ซอยพหลโยธิน 11 พญาไท'),
+      L('Grab with your bags, about 30-40 min. Craftsman can store bags until check-in.','Đi Grab cùng hành lý, khoảng 30-40 phút. Craftsman có thể giữ hành lý đến giờ nhận phòng.','นั่ง Grab พร้อมกระเป๋า ประมาณ 30-40 นาที Craftsman ฝากกระเป๋าไว้ได้จนกว่าจะเช็คอิน'),
+      ['taxi'],L(''),'core'),
+    it('d12','12:15','13:15',L('Sitting corner'),
+      L('Soi Ari 1','Soi Ari 1','ซอยอารีย์ 1'),
+      L('Close to Craftsman. Walk or take a short Grab.','Gần Craftsman. Đi bộ hoặc đi Grab một đoạn ngắn.','ใกล้ Craftsman เดินหรือนั่ง Grab สั้น ๆ'),
+      ['walk','taxi'],L('10:30-15:30'),'core',['Sun']),
+    it('d12','13:30','',L('Seven Suns (CentralWorld)'),
+      L('CentralWorld, Ratchadamri','CentralWorld, Ratchadamri','เซ็นทรัลเวิลด์ ราชดำริ'),
+      L('BTS Ari to Chit Lom (6 stops), then the skywalk to CentralWorld.','BTS Ari đến Chit Lom (6 ga), rồi đi cầu đi bộ trên cao đến CentralWorld.','BTS อารีย์ ไปชิดลม (6 สถานี) แล้วเดินสกายวอล์กไปเซ็นทรัลเวิลด์'),
+      ['bts','walk'],L(''),'core'),
+    it('d12','15:30','',L('YOLK'),
+      L('Banthat Thong Rd','Đường Banthat Thong','ถนนบรรทัดทอง'),
+      L('BTS Chit Lom to National Stadium (via Siam), then walk.','BTS Chit Lom đến National Stadium (qua Siam), rồi đi bộ.','BTS ชิดลม ไปสนามกีฬาแห่งชาติ (ผ่านสยาม) แล้วเดิน'),
+      ['bts','walk'],L(''),'core'),
+    it('d12','15:45','',L('Mother Cows'),
+      L('Banthat Thong Rd','Đường Banthat Thong','ถนนบรรทัดทอง'),
+      L('Also on Banthat Thong Rd, so walk from YOLK.','Cũng trên đường Banthat Thong, nên đi bộ từ YOLK.','อยู่บนถนนบรรทัดทองเช่นกัน เดินจาก YOLK ได้'),
+      ['walk'],L(''),'core'),
+    it('d12','16:30','18:30',L('Jeh O Chula'),
+      L('Charat Mueang Alley, Chula Soi 3','Hẻm Charat Mueang, Chula Soi 3','ซอยจุฬาฯ 3 (ซอยจรัสเมือง)'),
+      L('MRT Samyan or a short taxi from Banthat Thong. Take a queue number early.','MRT Samyan hoặc taxi một đoạn ngắn từ Banthat Thong. Lấy số thứ tự sớm.','MRT สามย่าน หรือแท็กซี่ระยะสั้นจากบรรทัดทอง รับบัตรคิวแต่เนิ่น ๆ'),
+      ['mrt','taxi'],L('16:00-00:00'),'core'),
+    it('d12','17:00','',L('Baan Kook Kai','Baan Kook Kai','บ้านกุ๊กไก่ (Baan Kook Kai)'),
+      L('Chula Soi 3 food street','Phố ẩm thực Chula Soi 3','ถนนอาหารซอยจุฬาฯ 3'),
+      L('Alternative to Jeh O Chula on the same street. Open-air, no aircon.','Lựa chọn thay cho Jeh O Chula, cùng con phố. Ngoài trời, không máy lạnh.','ทางเลือกแทน Jeh O Chula อยู่ถนนเดียวกัน นั่งกลางแจ้ง ไม่มีแอร์'),
+      ['walk'],L('15:00-00:00'),'option'),
+    it('d12','20:00','',L('Back to Craftsman','Về Craftsman','กลับ Craftsman'),
+      L('Soi Phahon Yothin 11, Phaya Thai','Soi Phahon Yothin 11, Phaya Thai','ซอยพหลโยธิน 11 พญาไท'),
+      L('BTS to Ari, then the hotel tuk-tuk shuttle (check its hours) or a short taxi.','BTS đến Ari, rồi đi tuk-tuk đưa đón của khách sạn (kiểm tra giờ chạy) hoặc taxi đoạn ngắn.','BTS ไปอารีย์ แล้วต่อตุ๊กตุ๊กรับส่งของโรงแรม (ตรวจเวลาให้บริการ) หรือแท็กซี่สั้น ๆ'),
+      ['bts','taxi'],L(''),'core'),
+    // Tue 13
+    it('d13','07:15','09:00',L('Suriya Coffee'),
+      L('Wat Klang Market, Thonburi','Chợ Wat Klang, Thonburi','Wat Klang Market ธนบุรี'),
+      L('Leave Craftsman about 06:30. Grab, about 45 min. Seats fill fast.','Rời Craftsman khoảng 06:30. Đi Grab, khoảng 45 phút. Chỗ ngồi hết rất nhanh.','ออกจาก Craftsman ประมาณ 06:30 นั่ง Grab ประมาณ 45 นาที ที่นั่งเต็มเร็ว'),
+      ['taxi'],L('06:00-11:00'),'core',['Mon']),
+    it('d13','09:15','09:45',L("Auntie Mhoo's Juice & Smoothies"),
+      L('Chakkraphet Rd, Ong Ang Canal','Đường Chakkraphet, kênh Ong Ang','ถนนจักรเพชร คลองโอ่งอ่าง'),
+      L('Grab from Suriya Coffee, about 15 min.','Đi Grab từ Suriya Coffee, khoảng 15 phút.','นั่ง Grab จาก Suriya Coffee ประมาณ 15 นาที'),
+      ['taxi'],L('09:00-18:00'),'option'),
+    it('d13','11:00','12:30',L('Jurassic World: The Experience'),
+      L('Asiatique The Riverfront, Charoen Krung','Asiatique The Riverfront, Charoen Krung','เอเชียทีค เดอะ ริเวอร์ฟร้อนท์ เจริญกรุง'),
+      L('Grab, about 20-25 min. Book a time slot online first. Weekdays are cheaper and quieter.','Đi Grab, khoảng 20-25 phút. Đặt khung giờ online trước. Ngày thường rẻ hơn và vắng hơn.','นั่ง Grab ประมาณ 20-25 นาที จองรอบเวลาออนไลน์ล่วงหน้า วันธรรมดาถูกกว่าและคนน้อยกว่า'),
+      ['taxi'],L('11:00-22:00'),'core'),
+    it('d13','14:00','16:00',L('Kodtalay Seafood Buffet'),
+      L('Charoen Krung Soi 58, Sathon','Charoen Krung Soi 58, Sathon','เจริญกรุง ซอย 58 สาทร'),
+      L('Short Grab from Asiatique. Go at opening on a weekday. Weekend evenings can queue for 90 min.','Đi Grab một đoạn ngắn từ Asiatique. Đến lúc mở cửa vào ngày thường. Tối cuối tuần có thể xếp hàng 90 phút.','นั่ง Grab สั้น ๆ จากเอเชียทีค ไปตอนเปิดร้านในวันธรรมดา เย็นวันหยุดอาจต้องรอคิว 90 นาที'),
+      ['taxi'],L('14:00-23:00'),'core'),
+    it('d13','16:30','',L('Return to Craftsman','Quay về Craftsman','กลับ Craftsman'),
+      L('Soi Phahon Yothin 11, Phaya Thai','Soi Phahon Yothin 11, Phaya Thai','ซอยพหลโยธิน 11 พญาไท'),
+      L('Asiatique free shuttle boat to Sathorn Pier (check its hours), then BTS Saphan Taksin to Ari. Or Grab. Pack and sleep early.','Thuyền miễn phí của Asiatique đến Sathorn Pier (kiểm tra giờ chạy), rồi BTS Saphan Taksin đến Ari. Hoặc đi Grab. Thu xếp hành lý và ngủ sớm.','เรือฟรีของเอเชียทีคไปท่าเรือสาทร (ตรวจเวลาให้บริการ) แล้วนั่ง BTS สะพานตากสิน ไปอารีย์ หรือนั่ง Grab เก็บของและนอนเร็ว'),
+      ['boat','bts','taxi'],L(''),'core'),
+    // Wed 14
+    it('d14','07:00','',L('Airport transfer, flight 11:20','Ra sân bay, chuyến bay 11:20','เดินทางไปสนามบิน เที่ยวบิน 11:20'),
+      L('Craftsman to the airport','Từ Craftsman ra sân bay','จาก Craftsman ไปสนามบิน'),
+      L('Suvarnabhumi: Grab or taxi (45-60 min), or BTS Ari to Phaya Thai, then Airport Link. Don Mueang: Grab (30-40 min). Aim to arrive by 08:20.','Suvarnabhumi: Grab hoặc taxi (45-60 phút), hoặc BTS Ari đến Phaya Thai rồi đi Airport Link. Don Mueang: Grab (30-40 phút). Nên đến sân bay trước 08:20.','สุวรรณภูมิ: Grab หรือแท็กซี่ (45-60 นาที) หรือ BTS อารีย์ ไปพญาไท แล้วต่อแอร์พอร์ตเรลลิงก์ ดอนเมือง: Grab (30-40 นาที) ควรถึงสนามบินภายใน 08:20'),
+      ['taxi','bts','arl'],L(''),'core',[],{note:L('Airport still to confirm.','Chưa xác nhận sân bay.','ยังต้องยืนยันสนามบิน'),nomap:true}),
+    // Ideas
+    it('pool','12:30','13:30',L('Kolun.h'),
+      L('Mahannop Rd, Phra Nakhon','Đường Mahannop, Phra Nakhon','ถนนมหรรณพ พระนคร'),
+      L('Grab from Craftsman, 30-40 min. Queues can reach an hour, so arrive by about 13:00.','Đi Grab từ Craftsman, 30-40 phút. Hàng chờ có thể đến một tiếng, nên đến trước khoảng 13:00.','นั่ง Grab จาก Craftsman 30-40 นาที คิวอาจยาวถึงหนึ่งชั่วโมง ควรไปถึงก่อนประมาณ 13:00'),
+      ['taxi'],L('08:00-15:00'),'option'),
+    it('pool','13:30','',L('Auntie Nid coffee shop'),
+      L('Mahannop Rd, next to Kolun.h','Đường Mahannop, cạnh Kolun.h','ถนนมหรรณพ ติดกับ Kolun.h'),
+      L('Grab-and-go Thai tea. Queue inside, no seating.','Trà Thái mua mang đi. Xếp hàng bên trong, không có chỗ ngồi.','ชาไทยแบบซื้อกลับ ต่อคิวด้านใน ไม่มีที่นั่ง'),
+      ['taxi'],L('06:00-15:00'),'option'),
+    it('pool','16:30','',L('Song Wat Rd','Đường Song Wat','ถนนทรงวาด'),
+      L('Chinatown riverside','Khu phố Tàu ven sông','ย่านเยาวราช ริมแม่น้ำ'),
+      L('Grab. A stroll along the heritage street.','Đi Grab. Dạo bộ dọc con phố di sản.','นั่ง Grab เดินเล่นตามถนนเก่าแก่'),
+      ['taxi'],L(''),'option'),
+    it('pool','07:00','09:30',L('Patpong Morning Market'),
+      L('Silom','Silom','สีลม'),
+      L('MRT Sukhumvit to Silom (about 12 min), then walk 5-10 min.','MRT Sukhumvit đến Silom (khoảng 12 phút), rồi đi bộ 5-10 phút.','MRT สุขุมวิท ไปสีลม (ประมาณ 12 นาที) แล้วเดิน 5-10 นาที'),
+      ['mrt','walk'],L('06:00-09:30'),'option',['Sat','Sun'])
+  ];
+  var s = {v:2, days:days, items:{}, lists:{pool:[]}};
+  days.forEach(function(d){ s.lists[d.id] = []; });
+  items.forEach(function(x){
+    s.items[x.id] = x;
+    s.lists[x.day].push(x.id);
+    delete x.day;
+  });
+  s.next = n + 1;
+  return s;
+}
+
+/* ---------- state ---------- */
+function valid(s){
+  return s && Array.isArray(s.days) && s.items && typeof s.items === 'object' &&
+    s.lists && Array.isArray(s.lists.pool) &&
+    s.days.every(function(d){ return Array.isArray(s.lists[d.id]); });
+}
+function mig(v, b){
+  if(v && typeof v === 'object') return v;
+  v = (v == null) ? '' : String(v);
+  if(b && typeof b === 'object' && (b.en === v || v === 'Fri-Sun 11:00-00:00, Mon-Fri 17:00-00:00' && b.en.indexOf('Sat-Sun 11:00') === 0)) return b;
+  return {en:v};
+}
+function migrate(s){
+  var base = seed();
+  s.days.forEach(function(d){
+    var b = base.days.filter(function(x){ return x.id === d.id; })[0];
+    ['title','stay','note'].forEach(function(f){ d[f] = mig(d[f], b && b[f]); });
+  });
+  Object.keys(s.items).forEach(function(id){
+    var it = s.items[id], b = base.items[id];
+    TEXTF.forEach(function(f){ it[f] = mig(it[f], b && b[f]); });
+    if(!it.modes) it.modes = [];
+    if(!it.closed) it.closed = [];
+  });
+  s.v = 2;
+  if(!s.next) s.next = 1000;
+  return s;
+}
+function normalize(s){
+  if(!valid(s)) return null;
+  return (s.v === 2) ? s : migrate(s);
+}
+function load(){
+  try{
+    var raw = localStorage.getItem(KEY);
+    if(raw){ var s = normalize(JSON.parse(raw)); if(s) return s; }
+    var old = localStorage.getItem(OLDKEY);
+    if(old){ var s2 = normalize(JSON.parse(old)); if(s2) return s2; }
+  }catch(e){}
+  return seed();
+}
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} }
+
+var S = load();
+var undoStack = [];
+
+function commit(msg, fn, withUndo){
+  undoStack.push(JSON.stringify(S));
+  if(undoStack.length > 40) undoStack.shift();
+  fn();
+  save();
+  render();
+  if(msg) toast(msg, withUndo);
+}
+function undo(){
+  if(!undoStack.length) return;
+  S = JSON.parse(undoStack.pop());
+  save();
+  render();
+  toast(t('tUndone'));
+}
+
+/* ---------- helpers ---------- */
+function esc(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+function dateOf(d){ return new Date(d.date + 'T00:00:00'); }
+function dayLabel(d){
+  var x = dateOf(d), w = dn(WD[x.getDay()]), m = MONS[LANG][x.getMonth()];
+  return LANG === 'vi' ? (w + ', ' + x.getDate() + ' ' + m) : (w + ' ' + x.getDate() + ' ' + m);
+}
+function fmtDays(arr){
+  var set = WEEK.filter(function(w){ return arr.indexOf(w) > -1; });
+  if(set.join() === 'Mon,Tue,Wed,Thu,Fri') return t('monFri');
+  return set.map(dn).join(', ');
+}
+function shiftT(tm, m){
+  if(!tm) return '09:00';
+  var p = tm.split(':'), x = parseInt(p[0],10)*60 + parseInt(p[1],10) + m;
+  x = Math.max(0, Math.min(1439, x));
+  return ('0'+Math.floor(x/60)).slice(-2) + ':' + ('0'+(x%60)).slice(-2);
+}
+function mins(tm){ if(!tm) return 99999; var p = tm.split(':'); return parseInt(p[0],10)*60 + parseInt(p[1],10); }
+function mapUrl(it){
+  var q = (pickIn(it.title, 'en') || pick(it.title)) + ' ' + (pickIn(it.area, 'en') || pick(it.area) || 'Bangkok');
+  return 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(q);
+}
+function removeFromLists(id){
+  Object.keys(S.lists).forEach(function(k){
+    S.lists[k] = S.lists[k].filter(function(x){ return x !== id; });
+  });
+}
+function moveItem(id, listId, index){
+  removeFromLists(id);
+  var arr = S.lists[listId];
+  if(index == null || index > arr.length) index = arr.length;
+  arr.splice(index, 0, id);
+}
+function listOf(id){
+  var found = 'pool';
+  Object.keys(S.lists).forEach(function(k){ if(S.lists[k].indexOf(id) > -1) found = k; });
+  return found;
+}
+function dayById(id){ return S.days.filter(function(d){ return d.id === id; })[0]; }
+
+/* ---------- render ---------- */
+function stopHTML(it, listId){
+  var day = dayById(listId);
+  var flag = '';
+  if(day && it.closed.length){
+    var wd = WD[dateOf(day).getDay()];
+    if(it.closed.indexOf(wd) > -1) flag = '<p class="flag">' + esc(t('flag', {wd: dn(wd)})) + '</p>';
+  }
+  var chips = (it.modes || []).map(function(m){ return '<span class="chip m-' + m + '">' + esc(t('m_' + m)) + '</span>'; }).join('');
+  var hours = pick(it.hours), area = pick(it.area), how = pick(it.how), note = pick(it.note);
+  var meta = [];
+  if(hours) meta.push(esc(t('hours')) + esc(hours));
+  if(it.closed.length) meta.push('<span class="closed">' + esc(t('closed', {days: fmtDays(it.closed)})) + '</span>');
+  var opts = S.days.map(function(d){
+    return '<option value="' + d.id + '"' + (d.id === listId ? ' selected' : '') + '>' + esc(dayLabel(d)) + '</option>';
+  }).join('') + '<option value="pool"' + (listId === 'pool' ? ' selected' : '') + '>' + esc(t('ideasOpt')) + '</option>';
+  var title = pick(it.title), tt = esc(title);
+  return '<li class="stop ' + (it.kind === 'option' ? 'is-option' : 'is-core') + '" draggable="true" data-id="' + it.id + '">' +
+    '<div class="gut">' +
+      '<input class="time" type="time" step="900" value="' + esc(it.time) + '" data-id="' + it.id + '" aria-label="' + esc(t('aStart', {t: title})) + '">' +
+      (it.end ? '<span class="end">' + esc(t('to', {end: it.end})) + '</span>' : '') +
+      '<span class="step"><button data-act="step" data-d="-15" data-id="' + it.id + '" aria-label="' + esc(t('aEarlier')) + '">-15</button>' +
+      '<button data-act="step" data-d="15" data-id="' + it.id + '" aria-label="' + esc(t('aLater')) + '">+15</button></span>' +
+    '</div>' +
+    '<div class="rail"><button class="dot ' + it.kind + '" data-act="dot" data-id="' + it.id + '" aria-label="' + esc(it.kind === 'option' ? t('aDotOpt') : t('aDotCore')) + '" title="' + esc(it.kind === 'option' ? t('tDotOpt') : t('tDotCore')) + '"></button></div>' +
+    '<div class="card">' +
+      '<div class="ct"><span class="ttl">' + tt + '</span>' +
+        (it.nomap ? '' : '<a class="map" href="' + mapUrl(it) + '" target="_blank" rel="noopener" aria-label="' + esc(t('aMap', {t: title})) + '" title="' + esc(t('tMap')) + '">' + IC.pin + '</a>') +
+      '</div>' +
+      (area ? '<div class="area">' + esc(area) + '</div>' : '') +
+      (how ? '<p class="how">' + esc(how) + '</p>' : '') +
+      (chips ? '<div class="chips">' + chips + '</div>' : '') +
+      (meta.length ? '<p class="meta">' + meta.join('. ') + '</p>' : '') +
+      (note ? '<p class="meta">' + esc(note) + '</p>' : '') +
+      flag +
+      '<div class="acts">' +
+        '<button class="ib" data-act="up" data-id="' + it.id + '" aria-label="' + esc(t('aUp')) + '">' + IC.up + '</button>' +
+        '<button class="ib" data-act="down" data-id="' + it.id + '" aria-label="' + esc(t('aDown')) + '">' + IC.down + '</button>' +
+        '<button class="ib" data-act="edit" data-id="' + it.id + '" aria-label="' + esc(t('aEdit', {t: title})) + '">' + IC.edit + '</button>' +
+        '<button class="ib del" data-act="del" data-id="' + it.id + '" aria-label="' + esc(t('aDelete', {t: title})) + '">' + IC.trash + '</button>' +
+        '<span class="sp"></span>' +
+        '<label class="mv">' + esc(t('moveTo')) + '<select data-move="' + it.id + '">' + opts + '</select></label>' +
+      '</div>' +
+    '</div>' +
+  '</li>';
+}
+function listHTML(listId, emptyMsg){
+  var ids = S.lists[listId];
+  var body = ids.map(function(id){ return stopHTML(S.items[id], listId); }).join('');
+  if(!ids.length) body = '<li class="empty">' + esc(emptyMsg) + '</li>';
+  return '<ul class="stops" data-list="' + listId + '">' + body + '</ul>';
+}
+function dayHTML(d){
+  var x = dateOf(d), wd = dn(WD[x.getDay()]), mon = MONS[LANG][x.getMonth()];
+  var stay = pick(d.stay), note = pick(d.note);
+  return '<section class="day" aria-label="' + esc(dayLabel(d)) + '">' +
+    '<header class="day-h">' +
+      '<div class="dnum"><span class="n">' + x.getDate() + '</span><span class="m"><b>' + esc(wd) + '</b>' + esc(mon) + '</span></div>' +
+      '<h2>' + esc(pick(d.title)) + '</h2>' +
+      (stay ? '<p class="stay">' + esc(t('stay')) + esc(stay) + '</p>' : '') +
+      (note ? '<p class="dnote">' + esc(note) + '</p>' : '') +
+      '<div class="day-tools"><button class="mini" data-act="edit-day" data-day="' + d.id + '">' + esc(t('editDay')) + '</button>' +
+      '<button class="mini" data-act="sort" data-day="' + d.id + '">' + esc(t('sort')) + '</button></div>' +
+    '</header>' +
+    listHTML(d.id, t('emptyDay')) +
+    '<button class="addrow" data-act="add" data-day="' + d.id + '">' + esc(t('addToDay', {d: wd + ' ' + x.getDate()})) + '</button>' +
+  '</section>';
+}
+function poolHTML(){
+  return '<section class="day pool" aria-label="' + esc(t('ideas')) + '">' +
+    '<header class="day-h"><h2>' + esc(t('ideas')) + '</h2><p class="dnote">' + esc(t('poolNote')) + '</p>' +
+    '<div class="day-tools"><button class="mini" data-act="sort" data-day="pool">' + esc(t('sort')) + '</button></div></header>' +
+    listHTML('pool', t('emptyPool')) +
+    '<button class="addrow" data-act="add" data-day="pool">' + esc(t('addIdea')) + '</button>' +
+  '</section>';
+}
+function summary(){
+  var core = 0, opt = 0;
+  S.days.forEach(function(d){ S.lists[d.id].forEach(function(id){ if(S.items[id].kind === 'option') opt++; else core++; }); });
+  return t('summary', {core: core, opt: opt, pool: S.lists.pool.length});
+}
+function applyStatic(){
+  document.documentElement.lang = LANG;
+  document.title = t('pageTitle');
+  Array.prototype.forEach.call(document.querySelectorAll('[data-i]'), function(el){ el.textContent = t(el.dataset.i); });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-lang]'), function(b){
+    b.setAttribute('aria-pressed', b.dataset.lang === LANG ? 'true' : 'false');
+  });
+  var g = document.getElementById('langGroup');
+  if(g) g.setAttribute('aria-label', t('langLabel'));
+}
+function render(){
+  document.getElementById('days').innerHTML = S.days.map(dayHTML).join('');
+  document.getElementById('pool').innerHTML = poolHTML();
+  document.getElementById('summary').textContent = summary();
+  document.getElementById('undoBtn').disabled = !undoStack.length;
+}
+
+/* ---------- toast ---------- */
+var toastTimer = null;
+function toast(msg, withUndo){
+  var el = document.getElementById('toast');
+  el.innerHTML = '<span>' + esc(msg) + '</span>' + (withUndo ? '<button data-act="undo">' + esc(t('undo')) + '</button>' : '');
+  el.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ el.hidden = true; }, 4500);
+}
+
+/* ---------- modal ---------- */
+var modalRoot = document.getElementById('modal');
+var lastFocus = null;
+var editing = null;
+function openModal(html){
+  lastFocus = document.activeElement;
+  modalRoot.innerHTML = '<div class="ov"><div class="panel" role="dialog" aria-modal="true">' + html + '</div></div>';
+  modalRoot.hidden = false;
+  var f = modalRoot.querySelector('input[type=text],textarea,select,button');
+  if(f) f.focus();
+}
+function closeModal(){
+  modalRoot.hidden = true;
+  modalRoot.innerHTML = '';
+  editing = null;
+  if(lastFocus && lastFocus.focus){ try{ lastFocus.focus(); }catch(e){} }
+}
+
+function dayOptions(sel){
+  return S.days.map(function(d){
+    return '<option value="' + d.id + '"' + (d.id === sel ? ' selected' : '') + '>' + esc(dayLabel(d)) + '</option>';
+  }).join('') + '<option value="pool"' + (sel === 'pool' ? ' selected' : '') + '>' + esc(t('ideasOpt')) + '</option>';
+}
+function checks(name, all, labelFn, chosen){
+  return '<div class="checks">' + all.map(function(k){
+    return '<label><input type="checkbox" name="' + name + '" value="' + k + '"' + (chosen.indexOf(k) > -1 ? ' checked' : '') + '>' + esc(labelFn(k)) + '</label>';
+  }).join('') + '</div>';
+}
+function openEditor(id, dayId){
+  var isNew = !id;
+  var it = isNew ? {title:'', time:'', end:'', area:'', how:'', modes:[], hours:'', kind:'core', closed:[], note:'', nomap:false}
+                 : S.items[id];
+  var cur = isNew ? dayId : listOf(id);
+  editing = {id:id, day:cur, isNew:isNew};
+  openModal(
+    '<form id="edForm" class="form" autocomplete="off">' +
+      '<h3>' + esc(isNew ? t('eAdd') : t('eEdit')) + '</h3>' +
+      '<p class="note-sm">' + esc(t('langNote')) + '</p>' +
+      '<label>' + esc(t('name')) + '<input type="text" name="title" required value="' + esc(pick(it.title)) + '"></label>' +
+      '<div class="row3">' +
+        '<label>' + esc(t('start')) + '<input type="time" name="time" step="900" value="' + esc(it.time) + '"></label>' +
+        '<label>' + esc(t('end')) + '<input type="time" name="end" step="900" value="' + esc(it.end) + '"></label>' +
+        '<label>' + esc(t('day')) + '<select name="day">' + dayOptions(cur) + '</select></label>' +
+      '</div>' +
+      '<label>' + esc(t('area')) + '<input type="text" name="area" value="' + esc(pick(it.area)) + '" placeholder="' + esc(t('areaPh')) + '"></label>' +
+      '<label>' + esc(t('how')) + '<textarea name="how" rows="3" placeholder="' + esc(t('howPh')) + '">' + esc(pick(it.how)) + '</textarea></label>' +
+      '<fieldset><legend>' + esc(t('transport')) + '</legend>' + checks('modes', MODEKEYS, function(k){ return t('m_' + k); }, it.modes || []) + '</fieldset>' +
+      '<label>' + esc(t('hoursLbl')) + '<input type="text" name="hours" value="' + esc(pick(it.hours)) + '" placeholder="' + esc(t('hoursPh')) + '"></label>' +
+      '<fieldset><legend>' + esc(t('closedOn')) + '</legend>' + checks('closed', WEEK, dn, it.closed || []) + '</fieldset>' +
+      '<label>' + esc(t('notes')) + '<input type="text" name="note" value="' + esc(pick(it.note)) + '"></label>' +
+      '<div class="row2">' +
+        '<label>' + esc(t('type')) + '<select name="kind"><option value="core"' + (it.kind === 'core' ? ' selected' : '') + '>' + esc(t('kCore')) + '</option><option value="option"' + (it.kind === 'option' ? ' selected' : '') + '>' + esc(t('kOpt')) + '</option></select></label>' +
+        '<label class="chk"><input type="checkbox" name="map"' + (it.nomap ? '' : ' checked') + '>' + esc(t('mapLink')) + '</label>' +
+      '</div>' +
+      '<div class="form-actions">' +
+        (isNew ? '' : '<button type="button" class="btn danger" data-act="del-modal">' + esc(t('del')) + '</button>') +
+        '<span class="sp"></span>' +
+        '<button type="button" class="btn" data-act="close">' + esc(t('cancel')) + '</button>' +
+        '<button type="submit" class="btn primary">' + esc(t('save')) + '</button>' +
+      '</div>' +
+    '</form>'
+  );
+}
+function saveEditor(form){
+  var fd = new FormData(form);
+  var title = (fd.get('title') || '').toString().trim();
+  if(!title){ form.elements.title.focus(); return; }
+  var texts = {
+    title: title,
+    area: (fd.get('area') || '').toString().trim(),
+    how: (fd.get('how') || '').toString().trim(),
+    hours: (fd.get('hours') || '').toString().trim(),
+    note: (fd.get('note') || '').toString().trim()
+  };
+  var plain = {
+    time: (fd.get('time') || '').toString(),
+    end: (fd.get('end') || '').toString(),
+    modes: fd.getAll('modes'),
+    closed: fd.getAll('closed'),
+    kind: fd.get('kind') === 'option' ? 'option' : 'core',
+    nomap: !fd.get('map')
+  };
+  var day = fd.get('day');
+  var ed = editing;
+  commit(ed.isNew ? t('tAdded') : t('tSaved'), function(){
+    var it;
+    if(ed.isNew){
+      var id = 'i' + (S.next++);
+      it = {id:id};
+      S.items[id] = it;
+      S.lists[day].push(id);
+    }else{
+      it = S.items[ed.id];
+      if(day !== ed.day) moveItem(ed.id, day);
+    }
+    Object.keys(plain).forEach(function(k){ it[k] = plain[k]; });
+    Object.keys(texts).forEach(function(k){ setText(it, k, texts[k]); });
+  });
+  closeModal();
+}
+function openDayEditor(dayId){
+  var d = dayById(dayId);
+  editing = {dayId:dayId};
+  openModal(
+    '<form id="dayForm" class="form" autocomplete="off">' +
+      '<h3>' + esc(t('dayEditTitle', {d: dayLabel(d)})) + '</h3>' +
+      '<p class="note-sm">' + esc(t('langNote')) + '</p>' +
+      '<label>' + esc(t('dayTitle')) + '<input type="text" name="title" value="' + esc(pick(d.title)) + '"></label>' +
+      '<label>' + esc(t('dayStay')) + '<input type="text" name="stay" value="' + esc(pick(d.stay)) + '"></label>' +
+      '<label>' + esc(t('dayNote')) + '<input type="text" name="note" value="' + esc(pick(d.note)) + '"></label>' +
+      '<div class="form-actions"><span class="sp"></span>' +
+        '<button type="button" class="btn" data-act="close">' + esc(t('cancel')) + '</button>' +
+        '<button type="submit" class="btn primary">' + esc(t('save')) + '</button></div>' +
+    '</form>'
+  );
+}
+
+/* ---------- export ---------- */
+function toText(){
+  var out = [t('exTitle'), ''];
+  function line(id){
+    var it = S.items[id];
+    var tm = it.time ? (it.time + (it.end ? '-' + it.end : '')) : '';
+    var area = pick(it.area), how = pick(it.how), hours = pick(it.hours), note = pick(it.note);
+    out.push('  ' + (tm + '            ').slice(0, 12) + pick(it.title) + (it.kind === 'option' ? ' ' + t('exOption') : '') + (area ? ', ' + area : ''));
+    if(how) out.push('              ' + t('exHow') + ': ' + how);
+    if(hours) out.push('              ' + t('exHours') + ': ' + hours);
+    if(it.closed.length) out.push('              ' + t('exClosed') + ': ' + fmtDays(it.closed));
+    if(note) out.push('              ' + t('exNote') + ': ' + note);
+  }
+  S.days.forEach(function(d){
+    var ti = pick(d.title), st = pick(d.stay), nt = pick(d.note);
+    out.push(dayLabel(d) + (ti ? ': ' + ti : ''));
+    if(st) out.push('  ' + t('exStay') + ': ' + st);
+    if(nt) out.push('  ' + nt);
+    S.lists[d.id].forEach(line);
+    out.push('');
+  });
+  out.push(t('exIdeas'));
+  S.lists.pool.forEach(line);
+  return out.join('\n');
+}
+function openBackup(tab){
+  var body;
+  if(tab === 'json'){
+    body = '<textarea class="paste" id="bk" readonly>' + esc(JSON.stringify(S)) + '</textarea>' +
+      '<p class="note-sm">' + esc(t('bkJsonNote')) + '</p>' +
+      '<div class="form-actions"><span class="sp"></span><button class="btn primary" data-act="copy">' + esc(t('copy')) + '</button></div>';
+  }else if(tab === 'restore'){
+    body = '<textarea class="paste" id="bk" placeholder="' + esc(t('bkPaste')) + '"></textarea>' +
+      '<p class="note-sm">' + esc(t('bkRestoreNote')) + '</p>' +
+      '<div class="form-actions"><span class="sp"></span><button class="btn primary" data-act="restore">' + esc(t('restoreBtn')) + '</button></div>';
+  }else{
+    tab = 'text';
+    body = '<textarea class="paste" id="bk" readonly>' + esc(toText()) + '</textarea>' +
+      '<div class="form-actions"><span class="sp"></span><button class="btn primary" data-act="copy">' + esc(t('copy')) + '</button></div>';
+  }
+  function tb(k, label){ return '<button class="tab" role="tab" aria-selected="' + (k === tab) + '" data-act="tab" data-tab="' + k + '">' + esc(label) + '</button>'; }
+  openModal(
+    '<h3>' + esc(t('bkTitle')) + '</h3>' +
+    '<div class="tabs" role="tablist">' + tb('text', t('tabText')) + tb('json', t('tabJson')) + tb('restore', t('tabRestore')) + '</div>' +
+    body +
+    '<div class="form-actions"><span class="sp"></span><button class="btn" data-act="close">' + esc(t('close')) + '</button></div>'
+  );
+}
+function copyBk(){
+  var ta = document.getElementById('bk');
+  if(!ta) return;
+  ta.focus(); ta.select();
+  var ok = false;
+  try{ ok = document.execCommand('copy'); }catch(e){}
+  if(!ok && navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(ta.value).then(function(){ toast(t('copied')); }, function(){ toast(t('copyKeys')); });
+    return;
+  }
+  toast(ok ? t('copied') : t('copyKeys'));
+}
+function restoreBk(){
+  var ta = document.getElementById('bk');
+  var s;
+  try{ s = normalize(JSON.parse(ta.value)); }catch(e){ s = null; }
+  if(!s){ toast(t('badCode')); return; }
+  commit(t('restored'), function(){ S = s; }, true);
+  closeModal();
+}
+
+/* ---------- actions ---------- */
+document.addEventListener('click', function(e){
+  if(e.target.classList && e.target.classList.contains('ov')){ closeModal(); return; }
+  var lb = e.target.closest('[data-lang]');
+  if(lb){
+    LANG = lb.dataset.lang;
+    try{ localStorage.setItem(LANGKEY, LANG); }catch(x){}
+    applyStatic();
+    render();
+    return;
+  }
+  var b = e.target.closest('[data-act]');
+  if(!b) return;
+  var act = b.dataset.act, id = b.dataset.id, day = b.dataset.day;
+  if(act === 'add'){ openEditor(null, day); }
+  else if(act === 'edit'){ openEditor(id); }
+  else if(act === 'edit-day'){ openDayEditor(day); }
+  else if(act === 'close'){ closeModal(); }
+  else if(act === 'undo'){ undo(); }
+  else if(act === 'del'){
+    commit(t('tDeleted'), function(){ removeFromLists(id); delete S.items[id]; }, true);
+  }
+  else if(act === 'del-modal'){
+    var did = editing && editing.id;
+    closeModal();
+    if(did) commit(t('tDeleted'), function(){ removeFromLists(did); delete S.items[did]; }, true);
+  }
+  else if(act === 'dot'){
+    commit('', function(){ S.items[id].kind = S.items[id].kind === 'option' ? 'core' : 'option'; });
+  }
+  else if(act === 'step'){
+    var dlt = parseInt(b.dataset.d, 10);
+    commit('', function(){
+      var it = S.items[id];
+      it.time = shiftT(it.time, dlt);
+      if(it.end) it.end = shiftT(it.end, dlt);
+    });
+  }
+  else if(act === 'up' || act === 'down'){
+    var l = listOf(id), arr = S.lists[l], i = arr.indexOf(id);
+    var j = act === 'up' ? i - 1 : i + 1;
+    if(j >= 0 && j < arr.length){
+      commit('', function(){ var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp; });
+    }
+  }
+  else if(act === 'sort'){
+    commit(t('tSorted'), function(){
+      var arr2 = S.lists[day].map(function(x, idx){ return {x:x, k:mins(S.items[x].time), i:idx}; });
+      arr2.sort(function(a, c){ return a.k - c.k || a.i - c.i; });
+      S.lists[day] = arr2.map(function(o){ return o.x; });
+    });
+  }
+  else if(act === 'backup'){ openBackup('text'); }
+  else if(act === 'tab'){ openBackup(b.dataset.tab); }
+  else if(act === 'copy'){ copyBk(); }
+  else if(act === 'restore'){ restoreBk(); }
+  else if(act === 'reset'){
+    openModal(
+      '<h3>' + esc(t('resetTitle')) + '</h3>' +
+      '<p>' + esc(t('resetBody')) + '</p>' +
+      '<div class="form-actions"><span class="sp"></span><button class="btn" data-act="close">' + esc(t('resetKeep')) + '</button>' +
+      '<button class="btn danger" data-act="reset-go">' + esc(t('resetGo')) + '</button></div>'
+    );
+  }
+  else if(act === 'reset-go'){
+    closeModal();
+    commit(t('tReset'), function(){ S = seed(); }, true);
+  }
+});
+
+document.addEventListener('change', function(e){
+  var el = e.target;
+  if(el.matches && el.matches('input.time')){
+    var id = el.dataset.id;
+    commit('', function(){ S.items[id].time = el.value; });
+  }else if(el.matches && el.matches('select[data-move]')){
+    var mid = el.dataset.move, to = el.value;
+    commit(t('tMoved'), function(){ moveItem(mid, to); });
+  }
+});
+
+document.addEventListener('submit', function(e){
+  var f = e.target;
+  if(f.id === 'edForm'){ e.preventDefault(); saveEditor(f); }
+  else if(f.id === 'dayForm'){
+    e.preventDefault();
+    var fd = new FormData(f), dayId = editing.dayId;
+    commit(t('tSaved'), function(){
+      var d = dayById(dayId);
+      setText(d, 'title', (fd.get('title') || '').toString().trim());
+      setText(d, 'stay', (fd.get('stay') || '').toString().trim());
+      setText(d, 'note', (fd.get('note') || '').toString().trim());
+    });
+    closeModal();
+  }
+});
+
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape' && !modalRoot.hidden) closeModal();
+});
+
+/* ---------- drag and drop ---------- */
+var dragId = null;
+function dropIndex(ul, y){
+  var els = Array.prototype.slice.call(ul.querySelectorAll(':scope > .stop:not(.dragging)'));
+  for(var i = 0; i < els.length; i++){
+    var r = els[i].getBoundingClientRect();
+    if(y < r.top + r.height / 2) return {index:i, ref:els[i]};
+  }
+  return {index:els.length, ref:null};
+}
+function clearLines(){
+  Array.prototype.forEach.call(document.querySelectorAll('.drop-line'), function(n){ n.remove(); });
+}
+document.addEventListener('dragstart', function(e){
+  var li = e.target.closest && e.target.closest('.stop');
+  if(!li) return;
+  dragId = li.dataset.id;
+  e.dataTransfer.effectAllowed = 'move';
+  try{ e.dataTransfer.setData('text/plain', dragId); }catch(x){}
+  setTimeout(function(){ li.classList.add('dragging'); }, 0);
+});
+document.addEventListener('dragover', function(e){
+  if(!dragId) return;
+  var ul = e.target.closest && e.target.closest('.stops');
+  if(!ul) return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  var pos = dropIndex(ul, e.clientY);
+  clearLines();
+  var line = document.createElement('li');
+  line.className = 'drop-line';
+  ul.insertBefore(line, pos.ref);
+});
+document.addEventListener('drop', function(e){
+  if(!dragId) return;
+  var ul = e.target.closest && e.target.closest('.stops');
+  if(!ul) return;
+  e.preventDefault();
+  var pos = dropIndex(ul, e.clientY);
+  var id = dragId, to = ul.dataset.list;
+  dragId = null;
+  clearLines();
+  commit(t('tMoved'), function(){ moveItem(id, to, pos.index); });
+});
+document.addEventListener('dragend', function(){
+  dragId = null;
+  clearLines();
+  Array.prototype.forEach.call(document.querySelectorAll('.dragging'), function(n){ n.classList.remove('dragging'); });
+});
+
+applyStatic();
+render();
+})();
+
+</script>
+</body>
+</html>
